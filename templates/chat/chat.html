@@ -1,0 +1,180 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<h2 style="margin: 8px 0 16px; color:#3D52A0;">Gold Chat</h2>
+
+<div class="card" style="padding: 20px;">
+  <form id="chat-form" style="display:flex; flex-direction:column; gap:12px;">
+    {% csrf_token %}
+    <label for="q" style="font-weight:600; color:#3D52A0;">Ask about gold / digital gold:</label>
+    <textarea
+      id="q"
+      name="question"
+      rows="4"
+      placeholder="e.g., Is digital gold good during inflation?"
+      required
+      style="width:100%; padding:12px; border:1px solid #ADBBDA; border-radius:10px; outline:none; resize:vertical; background:#F9F8FE;"
+    ></textarea>
+
+    <div style="display:flex; align-items:center; gap:10px;">
+      <button id="ask-btn" type="submit" class="btn">Ask</button>
+      <span id="status" class="muted"></span>
+    </div>
+  </form>
+
+  <div id="response" class="card" style="margin-top:16px; background:#FDFDFF; border:1px solid #E4E7F5;"></div>
+  <div id="buy-slot" style="margin-top:12px;"></div>
+</div>
+
+<hr style="border:none; border-top:1px solid #ADBBDA33; margin:24px 0;">
+
+<h3 style="color:#3D52A0; margin-bottom:12px;">Recent</h3>
+<ul style="list-style:none; padding-left:0; display:flex; flex-direction:column; gap:10px;">
+  {% for item in recent %}
+    <li class="card" style="padding:14px;">
+      <div style="margin-bottom:6px;">
+        <strong style="color:#3D52A0;">Q:</strong>
+        <span style="color:#334;">{{ item.question }}</span>
+      </div>
+
+      {% if item.is_gold_related %}
+        <div>
+          <strong style="color:#3D52A0;">A:</strong>
+          <span style="color:#334;">{{ item.answer|truncatechars:180 }}</span>
+          <span class="muted">({{ item.model_used|default:"model" }})</span>
+        </div>
+      {% else %}
+        <em class="muted">Not gold-related</em>
+      {% endif %}
+      <div class="muted" style="margin-top:6px;">{{ item.created_at }}</div>
+    </li>
+  {% empty %}
+    <li class="muted">No chats yet.</li>
+  {% endfor %}
+</ul>
+
+<style>
+  /* Subtle focus for inputs inside this page */
+  #q:focus {
+    border-color: #7091E6;
+    box-shadow: 0 0 0 3px rgba(112,145,230,0.18);
+    background: #fff;
+  }
+  /* Make inline buttons look consistent if additional appear later */
+  #buy-slot .btn {
+    background:#7091E6;
+  }
+  #buy-slot .btn:hover {
+    background:#3D52A0;
+  }
+</style>
+
+<script>
+  function getCsrfToken() {
+    const tokenInput = document.querySelector('#chat-form input[name=csrfmiddlewaretoken]');
+    return tokenInput ? tokenInput.value : '';
+  }
+
+  const form = document.getElementById('chat-form');
+  const askBtn = document.getElementById('ask-btn');
+  const statusEl = document.getElementById('status');
+  const respBox = document.getElementById('response');
+  const buySlot = document.getElementById('buy-slot');
+
+  function setThinking(on) {
+    if (on) {
+      askBtn.disabled = true;
+      statusEl.textContent = 'Thinking…';
+    } else {
+      askBtn.disabled = false;
+      statusEl.textContent = '';
+    }
+  }
+
+  function renderAnswer(answerText, modelUsed) {
+    // safer rendering (no HTML injection)
+    respBox.innerHTML = '';
+    const p = document.createElement('p');
+    p.style.margin = '0';
+    const strong = document.createElement('strong');
+    strong.textContent = 'Answer: ';
+    strong.style.color = '#3D52A0';
+    p.appendChild(strong);
+
+    const span = document.createElement('span');
+    span.textContent = answerText;
+    p.appendChild(span);
+    respBox.appendChild(p);
+
+    if (modelUsed) {
+      const meta = document.createElement('div');
+      meta.className = 'muted';
+      meta.style.marginTop = '6px';
+      meta.textContent = 'Model: ' + modelUsed;
+      respBox.appendChild(meta);
+    }
+  }
+
+  function renderRefusal(message) {
+    respBox.innerHTML = '';
+    const em = document.createElement('em');
+    em.textContent = message;
+    em.style.color = '#8697C4';
+    respBox.appendChild(em);
+  }
+
+  function renderBuyCTA(show) {
+    buySlot.innerHTML = '';
+    if (!show) return;
+
+    const a = document.createElement('a');
+    a.className = 'btn';
+    a.textContent = 'Buy Digital Gold';
+    a.href = "{% url 'buy_page' %}";
+    buySlot.appendChild(a);
+  }
+
+  form.addEventListener('submit', async function (e) {
+    e.preventDefault();
+    const q = (document.getElementById('q').value || '').trim();
+    if (!q) return;
+
+    setThinking(true);
+    respBox.innerHTML = '';
+    buySlot.innerHTML = '';
+
+    try {
+      const formData = new FormData();
+      formData.append('question', q);
+
+      const resp = await fetch("{% url 'chat_ask' %}", {
+        method: "POST",
+        headers: { "X-CSRFToken": getCsrfToken() },
+        body: formData
+      });
+
+      const data = await resp.json();
+
+      if (!resp.ok || !data.ok) {
+        respBox.innerHTML = `<span class="danger">${data.error || 'Something went wrong.'}</span>`;
+        setThinking(false);
+        return;
+      }
+
+      if (data.is_gold_related) {
+        renderAnswer(data.answer, data.model_used || '');
+        renderBuyCTA(data.offer_purchase === true);
+      } else {
+        // refusal path aligns with get_answer() fallback
+        renderRefusal(data.answer || 'Sorry, I am only trained to answer gold investment questions.');
+        renderBuyCTA(false);
+      }
+    } catch (err) {
+      respBox.innerHTML = `<span class="danger">Network error. Please try again.</span>`;
+    } finally {
+      setThinking(false);
+    }
+  });
+</script>
+{% endblock %}

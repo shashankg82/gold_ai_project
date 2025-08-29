@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="card" style="max-width: 450px; margin: 40px auto;">
+  <h2 style="margin-bottom: 16px; color:#3D52A0;">Register</h2>
+
+  <form method="post" style="display:flex; flex-direction:column; gap:14px;">
+    {% csrf_token %}
+
+    <div>
+      <label for="username" style="display:block; font-weight:500; margin-bottom:4px;">Username</label>
+      <input id="username" type="text" name="username" required
+             style="width:100%; padding:10px; border:1px solid #ADBBDA; border-radius:6px;">
+    </div>
+
+    <div>
+      <label for="email" style="display:block; font-weight:500; margin-bottom:4px;">Email</label>
+      <input id="email" type="email" name="email" required
+             style="width:100%; padding:10px; border:1px solid #ADBBDA; border-radius:6px;">
+    </div>
+
+    <div>
+      <label for="password1" style="display:block; font-weight:500; margin-bottom:4px;">Password</label>
+      <input id="password1" type="password" name="password1" required
+             style="width:100%; padding:10px; border:1px solid #ADBBDA; border-radius:6px;">
+    </div>
+
+    <div>
+      <label for="password2" style="display:block; font-weight:500; margin-bottom:4px;">Confirm Password</label>
+      <input id="password2" type="password" name="password2" required
+             style="width:100%; padding:10px; border:1px solid #ADBBDA; border-radius:6px;">
+    </div>
+
+    <button type="submit" class="btn">Register</button>
+  </form>
+
+  {% for message in messages %}
+    <p class="danger" style="margin-top:12px;">{{ message }}</p>
+  {% endfor %}
+</div>
+{% endblock %}

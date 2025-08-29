@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% block content %}
+<h2 style="margin: 8px 0 16px; color:#3D52A0;">Buy Digital Gold</h2>
+
+{% if error %}
+  <p class="danger" style="margin-bottom:12px;"><strong>{{ error }}</strong></p>
+{% endif %}
+
+<div class="card" style="padding:20px;">
+  <p style="margin:0 0 12px;">
+    <strong style="color:#3D52A0;">Live price:</strong>
+    <span style="color:#334;">₹{{ price_per_gram_inr }}/g</span>
+    {% if as_of %}
+      <span class="muted"> (as of {{ as_of }})</span>
+    {% endif %}
+  </p>
+
+  <form method="post" action="{% url 'mock_charge' %}" id="buy-form"
+        style="display:flex; flex-direction:column; gap:12px;">
+    {% csrf_token %}
+
+    <div>
+      <label for="amount" style="display:block; font-weight:600; color:#3D52A0; margin-bottom:6px;">
+        Amount (₹)
+      </label>
+      <input id="amount" name="amount" type="number" min="10" value="10" required
+             style="width:100%; padding:12px; border:1px solid #ADBBDA; border-radius:10px; outline:none; background:#F9F8FE;">
+    </div>
+
+    <button class="btn" type="submit" id="pay-btn">Pay (Mock)</button>
+
+    <div class="muted" style="margin-top:4px;">
+      You’ll receive approximately <span id="grams">—</span> grams.
+    </div>
+  </form>
+</div>
+
+<style>
+  /* Subtle focus for this page's input */
+  #amount:focus {
+    border-color:#7091E6;
+    box-shadow:0 0 0 3px rgba(112,145,230,0.18);
+    background:#fff;
+  }
+</style>
+
+{% load l10n %}
+<script>
+  const pricePerGram = Number('{{ price_per_gram_inr|default_if_none:0|floatformat:"2"|unlocalize }}');
+  const gramsEl = document.getElementById('grams');
+  const amountEl = document.getElementById('amount');
+  const payBtn = document.getElementById('pay-btn');
+
+  function updateGrams() {
+    const amt = parseFloat(amountEl.value || '0');
+    const g = isNaN(amt) ? 0 : Math.max(0, Math.floor((amt / pricePerGram) * 10000) / 10000);
+    gramsEl.textContent = g.toFixed(4) + " g";
+    payBtn.textContent = `Pay ₹${isNaN(amt) ? 0 : amt} (Mock)`;
+  }
+  amountEl.addEventListener('input', updateGrams);
+  updateGrams();
+</script>
+{% endblock %}

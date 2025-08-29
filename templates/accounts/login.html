@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="card" style="max-width: 400px; margin: 40px auto;">
+  <h2 style="margin-bottom: 16px; color:#3D52A0;">Login</h2>
+
+  <form method="post" style="display:flex; flex-direction:column; gap:14px;">
+    {% csrf_token %}
+    
+    <div>
+      <label for="username" style="display:block; font-weight:500; margin-bottom:4px;">Username</label>
+      <input id="username" type="text" name="username" required
+             style="width:100%; padding:10px; border:1px solid #ADBBDA; border-radius:6px;">
+    </div>
+
+    <div>
+      <label for="password" style="display:block; font-weight:500; margin-bottom:4px;">Password</label>
+      <input id="password" type="password" name="password" required
+             style="width:100%; padding:10px; border:1px solid #ADBBDA; border-radius:6px;">
+    </div>
+
+    <button type="submit" class="btn">Login</button>
+  </form>
+
+  {% for message in messages %}
+    <p class="danger" style="margin-top:12px;">{{ message }}</p>
+  {% endfor %}
+</div>
+{% endblock %}

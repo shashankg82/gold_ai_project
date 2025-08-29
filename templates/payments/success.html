@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block content %}
+<h2 style="margin: 8px 0 16px; color:#3D52A0;">Payment Successful</h2>
+
+<div class="card" style="padding:20px;">
+  <!-- Success badge -->
+  <div style="display:inline-block; padding:6px 10px; border-radius:999px; background:#E6F4EA; color:#0a7f42; font-weight:600; margin-bottom:12px;">
+    SUCCESS
+  </div>
+
+  <!-- Receipt block -->
+  <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+    <div style="padding:10px; border:1px solid #EDE8F5; border-radius:8px; background:#F9F8FE;">
+      <div class="muted" style="margin-bottom:4px;">Transaction #</div>
+      <div style="color:#3D52A0; font-weight:600;">{{ tx.id }}</div>
+    </div>
+
+    <div style="padding:10px; border:1px solid #EDE8F5; border-radius:8px; background:#F9F8FE;">
+      <div class="muted" style="margin-bottom:4px;">Amount</div>
+      <div style="color:#334;">₹{{ tx.amount_inr }}</div>
+    </div>
+
+    <div style="padding:10px; border:1px solid #EDE8F5; border-radius:8px; background:#FDFDFF;">
+      <div class="muted" style="margin-bottom:4px;">Gold credited</div>
+      <div style="color:#334;">{{ tx.grams }} g</div>
+    </div>
+
+    <div style="padding:10px; border:1px solid #EDE8F5; border-radius:8px; background:#FDFDFF;">
+      <div class="muted" style="margin-bottom:4px;">Price used</div>
+      <div style="color:#334;">₹{{ tx.price_per_gram_inr }}/g</div>
+    </div>
+  </div>
+
+  {% if tx.price_timestamp %}
+    <p class="muted" style="margin-top:12px;">As of {{ tx.price_timestamp }}</p>
+  {% endif %}
+
+  <p class="muted" style="margin-top:6px;">Status: {{ tx.status }}</p>
+</div>
+
+<p style="margin-top:16px; display:flex; gap:12px;">
+  <a class="btn" href="{% url 'buy_page' %}">Buy more</a>
+  <a class="btn" href="{% url 'chat_page' %}">Back to chat</a>
+</p>
+{% endblock %}
