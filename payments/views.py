@@ -10,10 +10,7 @@ from django.utils.dateparse import parse_date
 
 @login_required
 def buy_page(request):
-    """
-    Dedicated buy page. Server renders the current INR/g (24K) and timestamp.
-    We hide authority in the frontend, but still store it in DB on purchase.
-    """
+    
     price, meta = get_price_per_gram_inr()
     ctx = {
         "price_per_gram_inr": round(price, 2),
@@ -27,14 +24,7 @@ def buy_page(request):
 @require_POST
 @csrf_protect
 def mock_charge(request):
-    """
-    Simulate a payment from the dedicated buy page:
-      - validate amount (>= ₹10)
-      - fetch current INR/g from Metals.dev
-      - compute grams
-      - insert Transaction with SUCCESS
-      - redirect to success page
-    """
+   
     amt_str = (request.POST.get("amount") or "").strip()
     try:
         amount = float(amt_str)
@@ -78,9 +68,6 @@ def buy_success(request, tx_id: int):
     return render(request, "payments/success.html", {"tx": tx})
 
 
-# ─────────────────────────────────────────────────────────────
-# Helpers
-# ─────────────────────────────────────────────────────────────
 def _price_ctx():
     price, meta = get_price_per_gram_inr()
     return {
