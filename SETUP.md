@@ -60,6 +60,7 @@ python manage.py runserver
 and visit: http://127.0.0.1:8000/accounts/register/   
 
 Register with your email id and explore the website.
+Also please Enter a strong password with at least 8 characters, including uppercase, lowercase, numbers, and symbols.
 
 
 
